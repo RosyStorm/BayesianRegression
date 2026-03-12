@@ -12,38 +12,66 @@
 
 ## 数学原理
 
-贝叶斯线性回归的核心思想是将模型参数 $\mathbf{w}$ 视为随机变量，通过观测数据 $\mathcal{D} = \{\mathbf{X}, \mathbf{y}\}$ 来更新其分布。
+贝叶斯线性回归的核心思想是将模型参数  $ \mathbf{w} $  视为随机变量，通过观测数据  $ \mathcal{D} = \{\mathbf{X}, \mathbf{y}\} $  来更新其分布。
 
 ### 1. 模型定义
 
-假设目标变量 $t$ 由基函数 $\phi(\mathbf{x})$ 的线性组合加上高斯噪声产生：
-$$ t = \mathbf{w}^T \phi(\mathbf{x}) + \epsilon $$
-其中噪声 $\epsilon \sim \mathcal{N}(0, \beta^{-1})$，$\beta$ 为噪声精度（方差的倒数）。
+假设目标变量  $ t $  由基函数  $ \phi(\mathbf{x}) $  的线性组合加上高斯噪声产生：
+ 
+ $$
+   t = \mathbf{w}^T \phi(\mathbf{x}) + \epsilon  
+   $$
+
+其中噪声  $ \epsilon \sim \mathcal{N}(0, \beta^{-1}) $ ， $ \beta $  为噪声精度（方差的倒数）。
 
 ### 2. 先验分布
 
-假设参数向量 $\mathbf{w}$ 服从高斯先验分布：
-$$ p(\mathbf{w}) = \mathcal{N}(\mathbf{w} | \mathbf{m}_0, \mathbf{S}_0) $$
-在代码中，初始先验通常设为 $\mathbf{m}_0 = \mathbf{0}$，协方差矩阵 $\mathbf{S}_0 = \alpha^{-1} \mathbf{I}$，其中 $\alpha$ 为超参数控制先验的方差。
+假设参数向量  $ \mathbf{w} $  服从高斯先验分布：
+ 
+ $$
+   p(\mathbf{w}) = \mathcal{N}(\mathbf{w} | \mathbf{m}_0, \mathbf{S}_0)  
+   $$
+
+在代码中，初始先验通常设为  $ \mathbf{m}_0 = \mathbf{0} $ ，协方差矩阵  $ \mathbf{S}_0 = \alpha^{-1} \mathbf{I} $ ，其中  $ \alpha $  为超参数控制先验的方差。
 
 ### 3. 后验分布
 
 给定观测数据，参数的后验分布也是高斯分布：
-$$ p(\mathbf{w}|\mathbf{X}, \mathbf{y}) = \mathcal{N}(\mathbf{w} | \mathbf{m}_N, \mathbf{S}_N) $$
+ 
+ $$
+   p(\mathbf{w}|\mathbf{X}, \mathbf{y}) = \mathcal{N}(\mathbf{w} | \mathbf{m}_N, \mathbf{S}_N)  
+   $$
 
-其中后验协方差 $\mathbf{S}_N$ 和均值 $\mathbf{m}_N$ 计算如下：
-$$ \mathbf{S}_N^{-1} = \mathbf{S}_0^{-1} + \beta \mathbf{\Phi}^T \mathbf{\Phi} $$
-$$ \mathbf{m}_N = \mathbf{S}_N (\mathbf{S}_0^{-1}\mathbf{m}_0 + \beta \mathbf{\Phi}^T \mathbf{y}) $$
+
+其中后验协方差  $ \mathbf{S}_N $  和均值  $ \mathbf{m}_N $  计算如下：
+ 
+ $$
+   \mathbf{S}_N^{-1} = \mathbf{S}_0^{-1} + \beta \mathbf{\Phi}^T \mathbf{\Phi}  
+   $$
+
+ 
+ $$
+   \mathbf{m}_N = \mathbf{S}_N (\mathbf{S}_0^{-1}\mathbf{m}_0 + \beta \mathbf{\Phi}^T \mathbf{y})  
+   $$
+
 
 代码中的 `fit` 方法实现了上述公式的矩阵运算。
 
 ### 4. 预测分布
 
-对于新输入 $\mathbf{x}$，其预测值 $t$ 的分布为：
-$$ p(t|\mathbf{x}, \mathbf{X}, \mathbf{y}) = \mathcal{N}(t | \mathbf{m}_N^T \phi(\mathbf{x}), \sigma^2(\mathbf{x})) $$
+对于新输入  $ \mathbf{x} $ ，其预测值  $ t $  的分布为：
+ 
+ $$
+   p(t|\mathbf{x}, \mathbf{X}, \mathbf{y}) = \mathcal{N}(t | \mathbf{m}_N^T \phi(\mathbf{x}), \sigma^2(\mathbf{x}))  
+   $$
 
-预测方差 $\sigma^2(\mathbf{x})$ 由两部分组成：数据噪声和参数不确定性：
-$$ \sigma^2(\mathbf{x}) = \frac{1}{\beta} + \phi(\mathbf{x})^T \mathbf{S}_N \phi(\mathbf{x}) $$
+
+预测方差  $ \sigma^2(\mathbf{x}) $  由两部分组成：数据噪声和参数不确定性：
+ 
+ $$
+   \sigma^2(\mathbf{x}) = \frac{1}{\beta} + \phi(\mathbf{x})^T \mathbf{S}_N \phi(\mathbf{x})  
+   $$
+
 
 代码中的 `predict` 方法计算了预测的均值和方差。
 
@@ -52,11 +80,23 @@ $$ \sigma^2(\mathbf{x}) = \frac{1}{\beta} + \phi(\mathbf{x})^T \mathbf{S}_N \phi
 代码支持三种非线性基函数扩展，使模型能够拟合非线性数据：
 
 1.  **多项式基函数**:
-    $$ \phi_i(x) = x^i $$
+     
+     $$
+       \phi_i(x) = x^i  
+       $$
+
 2.  **径向基函数 (RBF)**:
-    $$ \phi_j(x) = \exp \left( - \frac{(x - \mu_j)^2}{2s^2} \right) $$
+     
+     $$
+       \phi_j(x) = \exp \left( - \frac{(x - \mu_j)^2}{2s^2} \right)  
+       $$
+
 3.  **正弦基函数**:
-    $$ \phi_i(x) = \sin(i x) $$
+     
+     $$
+       \phi_i(x) = \sin(i x)  
+       $$
+
 
 ---
 
@@ -79,7 +119,7 @@ $$ \sigma^2(\mathbf{x}) = \frac{1}{\beta} + \phi(\mathbf{x})^T \mathbf{S}_N \phi
   - `lengthscale`: RBF 基函数的宽度参数。
 
 #### `fit(self)`
-执行贝叶斯推断，计算参数的后验分布 $\mathbf{m}_N$ 和 $\mathbf{S}_N$。此外，该方法还包含了基于证据框架的超参数更新逻辑（更新 $\alpha$ 和 $\beta$）。
+执行贝叶斯推断，计算参数的后验分布  $ \mathbf{m}_N $  和  $ \mathbf{S}_N $ 。此外，该方法还包含了基于证据框架的超参数更新逻辑（更新  $ \alpha $  和  $ \beta $ ）。
 
 #### `predict(self, x_test)`
 对新数据进行预测。
