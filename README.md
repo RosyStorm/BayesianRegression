@@ -81,21 +81,21 @@
 
 1.  **多项式基函数**:
      
-     $$
-       \phi_i(x) = x^i  
-       $$
+    $$
+    \phi_i(x) = x^i  
+    $$
 
 2.  **径向基函数 (RBF)**:
      
-     $$
-       \phi_j(x) = \exp \left( - \frac{(x - \mu_j)^2}{2s^2} \right)  
-       $$
+    $$
+     \phi_j(x) = \exp \left( - \frac{(x - \mu_j)^2}{2s^2} \right)  
+    $$
 
 3.  **正弦基函数**:
      
-     $$
-       \phi_i(x) = \sin(i x)  
-       $$
+    $$
+    \phi_i(x) = \sin(i x)  
+    $$
 
 
 ---
